@@ -1,73 +1,65 @@
 const express = require("express");
 const cors = require("cors");
 
-const app = express();
-const PORT = 3001;
 
-// Middleware
+const app = express();
+var PORT = 3001;
+
 app.use(express.json());
 app.use(cors());
 
-// In-memory storage for employees
-let employees = []; // array to store employee objects
+// DB connection
+require("./connection");
 
-// POST API - Add Employee
-app.post("/add", (req, res) => {
+// ✅ MISSING CODE 1: Import Model
+const BlogModel = require("./model"); 
+// (file path ningalude project structure anusarichu adjust cheyyam)
+
+// ---------------- POST API ----------------
+app.post("/add", async (req, res) => {
   try {
-    const newEmployee = {
-      id: Date.now(), // unique id
-      ...req.body,
-    };
-    employees.push(newEmployee);
-    console.log("Added:", newEmployee);
-    res.status(201).json({ message: "Employee added", employee: newEmployee });
+    console.log(req.body);
+    await BlogModel(req.body).save();
+    res.send({ message: "Employee added" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to add employee" });
+    console.log(error);
+    res.status(500).send(error);
   }
 });
 
-// GET API - Get all Employees
-app.get("/get", (req, res) => {
+// ---------------- GET API ----------------
+// ✅ MISSING CODE 2: GET API
+app.get("/view", async (req, res) => {
   try {
-    res.status(200).json(employees); // always return JSON
+    const data = await BlogModel.find();
+    res.send(data);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to fetch employees" });
+    console.log(error);
+    res.status(500).send(error);
   }
 });
 
-// DELETE API - Delete Employee by ID
-app.delete("/delete/:id", (req, res) => {
-  try {
-    const id = Number(req.params.id);
-    employees = employees.filter((emp) => emp.id !== id);
-    res.status(200).json({ message: "Employee deleted" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to delete employee" });
-  }
-});
-
-// PUT API - Update Employee by ID
-app.put("/update/:id", (req, res) => {
-  try {
-    const id = Number(req.params.id);
-    let updatedEmployee;
-    employees = employees.map((emp) => {
-      if (emp.id === id) {
-        updatedEmployee = { ...emp, ...req.body };
-        return updatedEmployee;
-      }
-      return emp;
-    });
-    res.status(200).json({ message: "Employee updated", employee: updatedEmployee });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to update employee" });
-  }
-});
-
+// ---------------- SERVER ----------------
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`${PORT} is up and running`);
+});
+
+// DELETE API
+app.delete("/delete/:id", async (req, res) => {
+  try {
+    await BlogModel.findByIdAndDelete(req.params.id);
+    res.send({ message: "Employee deleted" });
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+// UPDATE API
+app.put("/update/:id", async (req, res) => {
+  try {
+    await BlogModel.findByIdAndUpdate(req.params.id, req.body);
+    res.send({ message: "Employee updated" });
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
