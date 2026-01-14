@@ -1,4 +1,7 @@
-//Write missing code here
+// ✅ MISSING CODE 1: Import mongoose
+const mongoose = require("mongoose");
+
+// Schema
 const schema = mongoose.Schema({
   EmpName: String,
   designation: String,
@@ -6,3 +9,7 @@ const schema = mongoose.Schema({
   img_url: String,
 });
 
+// ✅ MISSING CODE 2: Create & export model
+const EmployeeModel = mongoose.model("employee", schema);
+
+module.exports = EmployeeModel;
